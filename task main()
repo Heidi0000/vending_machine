@@ -1,0 +1,179 @@
+#include "PC_FileIO.c"
+
+const int COIL = 360; //COIL is the encoder count for one item to drop
+ //these values will probably change we need to test which value works
+const int CONVEYOR = 360;//how much conveyor needs to go until it reaches user
+
+const float PRICE1 = 0.75;
+const float PRICE2 = 50;
+float timeStamps[2][3];
+const int SPEEDCOIL = 30;
+const int SPEEDCONVEYOR = 25;
+const int MAXROTATION=2160;
+const int COILROTATE=720;
+const float COIN1=;
+const float COIN2=;
+
+// we’re using motor a and d for the conveyor belt and b and c for coil. B is for snack 1
+
+bool inStock(int item)
+{
+	if(item==1 && nMotorEncoder[MotorB]>= MAXROTATION);
+	{	
+return 0;
+	}
+	else if (item==2 && nMotorEncoder[MotorC]>= MAXROTATION)
+	{	
+return 0;
+	} 
+
+	return 1;
+}
+
+void selectSnack(int snackChoice)
+{
+displayString(1, "Select snack");
+	while (!getButtonPress(buttonAny))
+	{}
+	if (getButtonPress(buttonRight))
+		snackChoice = 1;
+	else if (getButtonPress(buttonLeft))
+		snackChoice = 2;
+	eraseDisplay();	
+}
+
+
+bool isMoney(float pricefloat & moneyIn)
+{
+		
+		//s1 is touch sensor for snack 1
+		if(SensorValue[S1]) 
+		{	moneyIn+=COIN1;
+		}
+		if(SensorValue[S2])
+{	moneyIn+=COIN2;
+}
+		eraseDisplay();
+		displayString(0,"Money inserted: %f",moneyIn);
+		return (moneyIn>=price);
+}
+
+void conveyorOn(int item)
+{
+		int encoderCounts = 0;
+		if(item==1)
+		{
+			motor[motorA]=SPEEDCONVEYOR;
+			motor[motorD]=-SPEEDCONVEYOR;
+while (encoderCounts < CONVEYOR)
+	{}
+	motor[motorA] = motor[motorD] = 0;
+	
+		}
+		else if(item==2)
+		{
+			motor[motorA]=SPEEDCONVEYOR;
+			motor[motorD]=-SPEEDCONVEYOR;
+			while (encoderCounts < CONVEYOR)
+	{}
+	motor[motorA] =motor[motorD] =0;
+		}
+}
+
+void rotateCoil(int snack)
+{	
+	if (snack == 1)
+	{
+	int encoderCounts = 0;
+	encoderCounts = nMotorEncoder[motorB];
+	motor[motorB] = SPEEDCOIL;
+	while (encoderCounts < COILROTATE)
+	{}
+	motor[motorB] =0;
+}
+else
+{	
+	int encoderCounts = 0;
+	encoderCounts = nMotorEncoder[motorC];
+	motor[motorC] = SPEEDCOIL;
+	while (encoderCounts < COILROTATE)
+	{}
+	motor[motorC] =0;
+}
+}
+
+void outputReport(TFileHandle fout)
+{
+	writeTextPC(fout,”ITEM    TIMESTAMPS”)
+	writeEndPC(fout);
+for (int row =0;row<2;row++)
+{
+	writeLongPC(fout,row+1);
+		writeTextPC(fout, “       “);
+	for(int col=0;col<3;col++)
+	{
+writeLongPC(fout, timeStamps[row][col]); 
+  			writeCharPC(fout, “   “);
+		}
+		writeEndPC(fout);
+	}
+}
+
+task main()
+{
+SensorType[@@] = sensorEV3_Touch;
+wait1Msec(50); 
+SensorType[@@] = sensorEV3_Touch;
+wait1Msec(50); 
+TFileHandle fout; 
+for(int row=0;row<2;row++)
+{
+	for(int col=0;col<3;col++)
+	timeStamps[row][col]=0;
+}
+int itemCount[2]={3,3};
+time1[T1] = 0;
+nMotorEncoder[motorB] = nMotorEncoder[motorC] = 0; 
+
+float moneyIn=0;
+	int snackChoice = 0;
+
+while (!buttonPress(buttonAny))
+	{}
+	while (buttonPress(buttonAny))
+	{}
+	do 
+	{
+		do
+		{
+			selectSnack(); 
+			if(!inStock(snackChoice)	
+			{
+				displayString(0,”ERROR! SELECT ANOTHER SNACK”);
+				eraseDisplay();
+			}
+		} while(!inStock(snackChoice));
+
+		float price=0;
+		if(snackChoice==1)
+			price=PRICE1;
+		else 
+			price=PRICE2;
+		
+		displayString(1, "Insert: $ %f.", price);
+		displayString(2, “Exact change only.");
+
+		while(!isMoney(price, moneyIn) || getButtonPress(ButtonAny)){}
+		if(money>=price)
+		{
+			rotateCoil(snackChoice);
+			wait10Ms(400);
+			conveyorOn(snackChoice);
+			item[snackChoice-1][itemCount[snackChoice]-1]=time1[T1]/1000;
+			itemCount[snackChoice-1]--;
+		}
+			
+	} while (nMotorEncoder[motorB]<MAXROTATION || nMotorEncoder[motorC]<MAXROTATION ); 
+	outputReport(fout);
+closeFilePC(fout);
+}
